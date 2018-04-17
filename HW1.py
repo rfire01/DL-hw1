@@ -3,6 +3,8 @@ import numpy as np
 ACTIVATION_FORWARD = {"sigmoid": lambda z: sigmoid(z),
               "relu": lambda z: relu(z)}
 
+ACTIVATION_BACKWARD = {"sigmoid": lambda dA, ac: sigmoid_backward(dA, ac),
+              "relu": lambda dA, ac: relu_backward(dA, ac)}
 
 def initialize_parameters(layer_dims):
     parameters = {}
@@ -36,7 +38,7 @@ def linear_activation_forward(A_prev, W, B, activation):
 
 def L_model_forward(X, parameters):
     caches = []
-    layers_amount = len(parameters.keys()) / 2
+    layers_amount = int(len(parameters.keys()) / 2)
 
     A = X
     for layer in range(1, layers_amount):
@@ -54,15 +56,9 @@ def L_model_forward(X, parameters):
 
 
 def compute_cost(AL, Y):
-    Y_tran = Y.transpose()
-    cost_arr = (Y_tran.dot(np.log(AL)) + (1 - Y_tran).dot(1 - AL)) / len(AL)
+    AL_trans = AL.transpose()
+    cost_arr = (Y.dot(np.log(AL_trans)) + (1 - Y).dot(1 - AL_trans)) / Y.shape[1]
     return -1 * cost_arr[0][0]
-
-
-
-
-ACTIVATION_BACKWARD = {"sigmoid": lambda dA, ac: sigmoid_backward(dA, ac),
-              "relu": lambda dA, ac: relu_backward(dA, ac)}
 
 
 def linear_backward(dZ, cache):
@@ -83,11 +79,12 @@ def relu_backward (dA, activation_cache):
 
 def sigmoid_der(z, derivative=True):
     # Calculate sigmoid derivative
-    return z * (1 - z) if derivative else 1 / (1 + np.exp(-z))
+    return np.multiply(z, (1 - z)) if derivative else 1 / (1 + np.exp(-z))
 
 
 def sigmoid_backward(dA, activation_cache):
-    return dA * sigmoid_der(activation_cache)
+    print ('dA: ', dA, ' activation_cache: ', activation_cache)
+    return dA.transpose() * sigmoid_der(activation_cache)
 
 
 def linear_activation_backward(dA, cache, activation):
@@ -100,6 +97,7 @@ def L_model_backward(AL, Y, caches):
     grads = {}
 
     # This line is problematic when AL ~ 0 or 1 (taken from the assignment)
+    print ('Y shape: ', Y.shape, ' AL shape: ', AL.shape)
     dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
     grads["dA{}".format(layers_amount)] = dAL
     dA, dW, db = linear_activation_backward(dAL, caches[-1], "sigmoid")
@@ -125,4 +123,37 @@ def Update_parameters(parameters, grads, learning_rate):
             "db{}".format(layer)]
 
     return parameters
+
+
+def L_layer_model(X,Y,layers_dims,learning_rate,num_iterations):
+    costs = []
+    for iteration in range(1, num_iterations + 1):
+        parameters = initialize_parameters(layers_dims)
+        AL, caches = L_model_forward(X, parameters)
+        cost = compute_cost(AL, Y)
+        if (iteration % 100) == 0:
+            costs.append(cost)
+
+        grads = L_model_backward(AL, Y, caches)
+        parameters = Update_parameters(parameters, grads, learning_rate)
+
+    return parameters, costs
+
+
+
+X = np.matrix([[1,1,1,1],
+     [2,2,2,2],
+     [3,3,3,3]])
+Y = np.matrix([1,1,0,1])
+parameters,costs = L_layer_model(X, Y, [3, 4, 3, 1], 0.7, 5)
+print ('parameters: ', parameters)
+print ('costs', costs)
+
+
+
+
+
+
+
+
 
