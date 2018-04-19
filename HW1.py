@@ -143,28 +143,25 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations):
     return parameters, costs
 
 
-# for filtering 3 and 8 digits out of the training data
-def check_3_8(digit):
-    if (digit == 3) or (digit == 8):
-        return True
-    return False
+def get_digit_indices(Y, digits):
+    if (digits == '3,8'):
+        first_digit = Y == 3
+        second_digit = Y == 8
+    else:
+        first_digit = Y == 7
+        second_digit = Y == 9
 
+    indices_first = np.array(range(len(first_digit)))
+    indices_first = indices_first[first_digit]
+    indices_second = np.array(range(len(second_digit)))
+    indices_second = indices_second[second_digit]
+    indices = np.append(indices_first, indices_second)
 
-# for filtering 7 and 9 digits out of the training data
-def check_7_9(digit):
-    if (digit == 3) or (digit == 8):
-        return True
-    return False
+    return indices
 
 
 def get_filtered_X(X, Y, digits):
-
-    if(digits == '3,8'):
-        indices = map(check_3_8, Y)
-    else:
-        indices = map(check_7_9, Y)
-
-    indices = np.where(Y == True)[0]
+    indices = get_digit_indices(Y, digits)
     filtered = X[indices]
     X_refactored = []
     for index in range(0, filtered.shape[0]):
@@ -177,14 +174,18 @@ def get_filtered_X(X, Y, digits):
     return X_refactored
 
 
+def get_filtered_Y(Y, digits):
+    indices = get_digit_indices(Y, digits)
+    return Y[indices]
+
 X = idx2np.convert_from_file('train-images.idx3-ubyte')
 Y = idx2np.convert_from_file('train-labels.idx1-ubyte')
 
 X_3_8 = get_filtered_X(X, Y, '3,8')
 X_7_9 = get_filtered_X(X, Y, '7,9')
 
-Y_3_8 = filter(lambda digit: (digit == 3) or (digit == 8), Y)
-Y_7_9 = filter(lambda digit: (digit == 7) or (digit == 9), Y)
+Y_3_8 = get_filtered_Y(Y, '3,8')
+Y_7_9 = get_filtered_Y(Y, '7,9')
 
 
 
