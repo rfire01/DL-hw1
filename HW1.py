@@ -58,6 +58,7 @@ def L_model_forward(X, parameters):
 
 def compute_cost(AL, Y):
     AL_trans = AL.transpose()
+    print(Y.shape)
     cost_arr = (Y.dot(np.log(AL_trans)) +
                 (1 - Y).dot(np.log(1 - AL_trans))) / Y.shape[1]
     return -1 * cost_arr[0][0]
@@ -86,7 +87,7 @@ def sigmoid_der(z, derivative=True):
 
 
 def sigmoid_backward(dA, activation_cache):
-    return dA * sigmoid_der(activation_cache)
+    return dA.transpose() * sigmoid_der(activation_cache)
 
 
 def linear_activation_backward(dA, cache, activation):
@@ -176,7 +177,7 @@ def get_filtered_X(X, Y, digits):
 
 def get_filtered_Y(Y, digits):
     indices = get_digit_indices(Y, digits)
-    return Y[indices]
+    return np.matrix(Y[indices])
 
 X = idx2np.convert_from_file('train-images.idx3-ubyte')
 Y = idx2np.convert_from_file('train-labels.idx1-ubyte')
