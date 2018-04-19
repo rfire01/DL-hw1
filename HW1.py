@@ -1,4 +1,5 @@
 import numpy as np
+import idx2numpy as idx2np
 
 ACTIVATION_FORWARD = {"sigmoid": lambda z: sigmoid(z),
               "relu": lambda z: relu(z)}
@@ -116,7 +117,7 @@ def L_model_backward(AL, Y, caches):
 
 
 def Update_parameters(parameters, grads, learning_rate):
-    layers_amount = len(parameters.keys()) / 2
+    layers_amount = int(len(parameters.keys()) / 2)
 
     for layer in range(1, layers_amount + 1):
         parameters["W{}".format(layer)] -= learning_rate * grads[
@@ -142,14 +143,54 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations):
     return parameters, costs
 
 
+# for filtering 3 and 8 digits out of the training data
+def check_3_8(digit):
+    if (digit == 3) or (digit == 8):
+        return True
+    return False
 
-X = np.array([[1,1,1,1],
-     [2,2,2,2],
-     [3,3,3,3]])
-Y = np.array([[1,1,0,1], [0,0,1,0]])
-parameters,costs = L_layer_model(X, Y, [3, 4, 3, 2], 0.01, 5)
-print ('parameters: ', parameters)
-print ('costs', costs)
+
+# for filtering 7 and 9 digits out of the training data
+def check_7_9(digit):
+    if (digit == 3) or (digit == 8):
+        return True
+    return False
+
+
+def get_filtered_X(X, Y, digits):
+
+    if(digits == '3,8'):
+        indices = map(check_3_8, Y)
+    else:
+        indices = map(check_7_9, Y)
+
+    indices = np.where(Y == True)[0]
+    filtered = X[indices]
+    X_refactored = []
+    for index in range(0, filtered.shape[0]):
+        exm_matrix = filtered[index]
+        exm_vect = np.ndarray.flatten(exm_matrix)
+        X_refactored.append(exm_vect)
+
+    X_refactored = np.asanyarray(X_refactored)
+    X_refactored = X_refactored.transpose()
+    return X_refactored
+
+
+X = idx2np.convert_from_file('train-images.idx3-ubyte')
+Y = idx2np.convert_from_file('train-labels.idx1-ubyte')
+
+X_3_8 = get_filtered_X(X, Y, '3,8')
+X_7_9 = get_filtered_X(X, Y, '7,9')
+
+Y_3_8 = filter(lambda digit: (digit == 3) or (digit == 8), Y)
+Y_7_9 = filter(lambda digit: (digit == 7) or (digit == 9), Y)
+
+
+
+parameters,costs = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 3000)
+print('parameters: ', parameters)
+print('costs', costs)
 
 
 
