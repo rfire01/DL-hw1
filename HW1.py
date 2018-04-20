@@ -200,8 +200,31 @@ def get_filtered_Y(Y, digits):
     return np.matrix(res)
 
 
+def get_predictions(probabilities):
+    res = []
+    probabilities = probabilities[0]
+    for i in range(0, len(probabilities)):
+        if probabilities[i] > 0.5:
+            res.append(1)
+        else:
+            res.append(0)
+    return res
+
+
+def get_accuracy(predictions, Y):
+    num_of_correct = 0
+    Y = Y.getA()[0]
+    for i in range(0, len(predictions)):
+        if(predictions[i] == Y[i]):
+            num_of_correct += 1
+    return num_of_correct / len(predictions)
+
+
 def predict(X, Y, parameters):
     AL, caches = L_model_forward(X, parameters)
+    predictions = get_predictions(AL)
+    accuracy = get_accuracy(predictions, Y)
+    return accuracy
 
 
 X = idx2np.convert_from_file('train-images.idx3-ubyte')
@@ -214,10 +237,11 @@ Y_3_8 = get_filtered_Y(Y, '3,8')
 Y_7_9 = get_filtered_Y(Y, '7,9')
 
 
-
 parameters,costs = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 100)
 print('parameters: ', parameters)
 print('costs', costs)
+accuracy = predict(X_3_8, Y_3_8, parameters)
+print('accuracy = ', accuracy)
 
 
 
