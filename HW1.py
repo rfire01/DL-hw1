@@ -13,7 +13,7 @@ def initialize_parameters(layer_dims):
         dim1 = layer_dims[index]
         dim2 = layer_dims[index - 1]
         parameters["W{}".format(index)] = np.random.randn(dim1, dim2)
-        parameters["b{}".format(index)] = np.zeros((dim1, 1))
+        parameters["b{}".format(index)] = np.ones((dim1, 1))
 
     return parameters
 
@@ -131,8 +131,9 @@ def Update_parameters(parameters, grads, learning_rate):
 
 def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations):
     costs = []
+    parameters = initialize_parameters(layers_dims)
     for iteration in range(1, num_iterations + 1):
-        parameters = initialize_parameters(layers_dims)
+        print('iteration ', iteration)
         AL, caches = L_model_forward(X, parameters)
         cost = compute_cost(AL, Y)
         if (iteration % 100) == 0:
@@ -175,9 +176,33 @@ def get_filtered_X(X, Y, digits):
     return X_refactored
 
 
+def transform_digits(indices, digits):
+    labels = indices.getA()
+    res = []
+    for i in range(0, labels.shape[1]):
+        if digits == '3,8':
+            if labels[0][i] == 3:
+                res.append(1)
+            else:
+                res.append(0)
+        else:
+            if labels[0][i] == 7:
+                res.append(1)
+            else:
+                res.append(0)
+    return res
+
+
 def get_filtered_Y(Y, digits):
     indices = get_digit_indices(Y, digits)
-    return np.matrix(Y[indices])
+    temp = np.matrix(Y[indices])
+    res = transform_digits(temp, digits)
+    return np.matrix(res)
+
+
+def predict(X, Y, parameters):
+    AL, caches = L_model_forward(X, parameters)
+
 
 X = idx2np.convert_from_file('train-images.idx3-ubyte')
 Y = idx2np.convert_from_file('train-labels.idx1-ubyte')
@@ -190,7 +215,7 @@ Y_7_9 = get_filtered_Y(Y, '7,9')
 
 
 
-parameters,costs = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 3000)
+parameters,costs = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 100)
 print('parameters: ', parameters)
 print('costs', costs)
 
