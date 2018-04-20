@@ -7,13 +7,15 @@ ACTIVATION_FORWARD = {"sigmoid": lambda z: sigmoid(z),
 ACTIVATION_BACKWARD = {"sigmoid": lambda dA, ac: sigmoid_backward(dA, ac),
               "relu": lambda dA, ac: relu_backward(dA, ac)}
 
+EPSILON = 0.000001
+
 def initialize_parameters(layer_dims):
     parameters = {}
     for index in range(1,len(layer_dims)):
         dim1 = layer_dims[index]
         dim2 = layer_dims[index - 1]
         parameters["W{}".format(index)] = np.random.randn(dim1, dim2)
-        parameters["b{}".format(index)] = np.ones((dim1, 1))
+        parameters["b{}".format(index)] = np.zeros((dim1, 1))
 
     return parameters
 
@@ -24,6 +26,7 @@ def linear_forward(A, W, b):
 
 
 def sigmoid(z):
+    print('z = ', z)
     return 1 / (1 + np.exp(-z)), z
 
 
@@ -34,7 +37,18 @@ def relu(z):
 def linear_activation_forward(A_prev, W, B, activation):
     Z, linear_cache = linear_forward(A_prev, W, B)
     A_current, activation_cache = ACTIVATION_FORWARD[activation](Z)
+    print('A = ', A_current)
     return A_current, linear_cache, activation_cache
+
+
+def normalize_sigmoid_res(AL):
+    activations = AL[0]
+    for i in range(0, len(activations)):
+        if activations[i] == 0:
+            activations[i] == 0 + EPSILON
+        if activations[i] == 1:
+            activations[i] = 1 - EPSILON
+    return activations
 
 
 def L_model_forward(X, parameters):
@@ -51,14 +65,15 @@ def L_model_forward(X, parameters):
     W = parameters["W{}".format(layers_amount)]
     b = parameters["b{}".format(layers_amount)]
     AL, linear_cache, activation_cache = linear_activation_forward(A, W, b, "sigmoid")
+    AL = normalize_sigmoid_res(AL)
     caches.append((linear_cache, activation_cache))
+    print('AL', AL)
 
     return AL, caches
 
 
 def compute_cost(AL, Y):
     AL_trans = AL.transpose()
-    # print(Y.shape)
     cost_arr = (Y.dot(np.log(AL_trans)) +
                 (1 - Y).dot(np.log(1 - AL_trans))) / Y.shape[1]
     return -1 * cost_arr[0][0]
@@ -202,7 +217,6 @@ def get_filtered_Y(Y, digits):
 
 def get_predictions(probabilities):
     res = []
-    probabilities = probabilities[0]
     for i in range(0, len(probabilities)):
         if probabilities[i] > 0.5:
             res.append(1)
@@ -226,6 +240,7 @@ def predict(X, Y, parameters):
     accuracy = get_accuracy(predictions, Y)
     return accuracy
 
+# -------------------- training data --------------------
 
 X = idx2np.convert_from_file('train-images.idx3-ubyte')
 Y = idx2np.convert_from_file('train-labels.idx1-ubyte')
@@ -236,12 +251,33 @@ X_7_9 = get_filtered_X(X, Y, '7,9')
 Y_3_8 = get_filtered_Y(Y, '3,8')
 Y_7_9 = get_filtered_Y(Y, '7,9')
 
+# -------------------- test data --------------------
 
-parameters,costs = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 100)
-print('parameters: ', parameters)
-print('costs', costs)
-accuracy = predict(X_3_8, Y_3_8, parameters)
-print('accuracy = ', accuracy)
+X_test = idx2np.convert_from_file('t10k-images.idx3-ubyte')
+Y_test = idx2np.convert_from_file('t10k-labels.idx1-ubyte')
+
+X_3_8_test = get_filtered_X(X_test, Y_test, '3,8')
+X_7_9_test = get_filtered_X(X_test, Y_test, '7,9')
+
+Y_3_8_test = get_filtered_Y(Y_test, '3,8')
+Y_7_9_test = get_filtered_Y(Y_test, '7,9')
+
+
+parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 10)
+parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.009, 10)
+
+print('parameters 3,8 : ', parameters_3_8)
+print('costs 3,8 :', costs_3_8)
+
+print('parameters 7,9 : ', parameters_7_9)
+print('costs 7,9 :', costs_7_9)
+
+
+accuracy_3_8 = predict(X_3_8_test, Y_3_8_test, parameters_3_8)
+accuracy_7_9 = predict(X_7_9_test, Y_7_9_test, parameters_7_9)
+
+print('accuracy for 3,8 = ', accuracy_3_8)
+print('accuracy for 7,9 = ', accuracy_7_9)
 
 
 
