@@ -21,13 +21,13 @@ def initialize_parameters(layer_dims):
 
 
 def linear_forward(A, W, b):
-    Z = W.dot(A) + b
+    Z = np.dot(W,A) + b
     return Z, {"A": A,"W": W, "b": b}
 
 
 def sigmoid(z):
     # print('z = ', z)
-    return 1 / (1 + np.exp(-z)), z
+    return 1.0 / (1 + np.exp(1.0 * z)), z
 
 
 def relu(z):
@@ -65,7 +65,7 @@ def L_model_forward(X, parameters):
     W = parameters["W{}".format(layers_amount)]
     b = parameters["b{}".format(layers_amount)]
     AL, linear_cache, activation_cache = linear_activation_forward(A, W, b, "sigmoid")
-    AL = normalize_sigmoid_res(AL)
+    # AL = normalize_sigmoid_res(AL)
     caches.append((linear_cache, activation_cache))
     # print('AL', AL)
 
@@ -151,7 +151,7 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations):
         AL, caches = L_model_forward(X, parameters)
         cost = compute_cost(AL, Y)
         if (iteration % 100) == 0:
-            costs.append(cost)
+            costs.append(cost[0][0])
 
         grads = L_model_backward(AL, Y, caches)
         parameters = Update_parameters(parameters, grads, learning_rate)
@@ -216,8 +216,8 @@ def get_filtered_Y(Y, digits):
 
 def get_predictions(probabilities):
     res = []
-    for i in range(0, len(probabilities)):
-        if probabilities[i] > 0.5:
+    for i in range(0, probabilities.size):
+        if probabilities[0][i] > 0.5:
             res.append(1)
         else:
             res.append(0)
@@ -262,21 +262,21 @@ Y_3_8_test = get_filtered_Y(Y_test, '3,8')
 Y_7_9_test = get_filtered_Y(Y_test, '7,9')
 
 
-parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.02, 1000)
-parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.05, 1000)
+parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.02, 100)
+# parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.05, 1000)
 
 print('parameters 3,8 : ', parameters_3_8)
 print('costs 3,8 :', costs_3_8)
 
-print('parameters 7,9 : ', parameters_7_9)
-print('costs 7,9 :', costs_7_9)
+# print('parameters 7,9 : ', parameters_7_9)
+# print('costs 7,9 :', costs_7_9)
 
 
 accuracy_3_8 = predict(X_3_8_test, Y_3_8_test, parameters_3_8)
-accuracy_7_9 = predict(X_7_9_test, Y_7_9_test, parameters_7_9)
+# accuracy_7_9 = predict(X_7_9_test, Y_7_9_test, parameters_7_9)
 
 print('accuracy for 3,8 = ', accuracy_3_8)
-print('accuracy for 7,9 = ', accuracy_7_9)
+# print('accuracy for 7,9 = ', accuracy_7_9)
 
 
 
