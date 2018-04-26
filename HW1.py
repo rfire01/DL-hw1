@@ -17,14 +17,6 @@ def initialize_parameters(layer_dims):
         parameters['b' + str(i + 1)] = np.zeros(shape=(layer_dims[i + 1], 1))
 
     return parameters
-    # parameters = {}
-    # for index in range(1,len(layer_dims)):
-    #     dim1 = layer_dims[index]
-    #     dim2 = layer_dims[index - 1]
-    #     parameters["W{}".format(index)] = np.random.randn(dim1, dim2) * 0.01
-    #     parameters["b{}".format(index)] = np.zeros((dim1, 1))
-
-    # return parameters
 
 
 def linear_forward(A, W, b):
@@ -33,7 +25,6 @@ def linear_forward(A, W, b):
 
 
 def sigmoid(z):
-    # print('z = ', z)
     return 1.0 / (1 + np.exp(-1.0 * z)), z
 
 
@@ -44,7 +35,6 @@ def relu(z):
 def linear_activation_forward(A_prev, W, B, activation):
     Z, linear_cache = linear_forward(A_prev, W, B)
     A_current, activation_cache = ACTIVATION_FORWARD[activation](Z)
-    # print('A = ', A_current)
     return A_current, linear_cache, activation_cache
 
 
@@ -72,9 +62,7 @@ def L_model_forward(X, parameters):
     W = parameters["W{}".format(layers_amount)]
     b = parameters["b{}".format(layers_amount)]
     AL, linear_cache, activation_cache = linear_activation_forward(A, W, b, "sigmoid")
-    # AL = normalize_sigmoid_res(AL)
     caches.append((linear_cache, activation_cache))
-    # print('AL', AL)
 
     return AL, caches
 
@@ -83,7 +71,7 @@ def compute_cost(AL, Y):
     AL_trans = AL.transpose()
     cost_arr = (Y.dot(np.log(AL_trans)) +
                 (1 - Y).dot(np.log(1 - AL_trans))) / Y.shape[1]
-    return -1 * cost_arr[0][0]
+    return -1 * cost_arr.item(0)
 
 
 def linear_backward(dZ, cache):
@@ -127,7 +115,6 @@ def L_model_backward(AL, Y, caches):
     layers_amount = len(caches)
     grads = {}
 
-    # This line is problematic when AL ~ 0 or 1 (taken from the assignment)
     dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
     grads["dA{}".format(layers_amount)] = dAL
     dA, dW, db = linear_activation_backward(dAL, caches[-1], "sigmoid")
@@ -159,7 +146,6 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations):
     costs = []
     parameters = initialize_parameters(layers_dims)
     for iteration in range(1, num_iterations + 1):
-        print('iteration ', iteration)
         AL, caches = L_model_forward(X, parameters)
 
         AL[AL == 0] = EPSILON
@@ -168,6 +154,8 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations):
         cost = compute_cost(AL, Y)
         if (iteration % 100) == 0:
             costs.append(cost)
+            print "iteration ", iteration
+            print cost
 
         grads = L_model_backward(AL, Y, caches)
         parameters = Update_parameters(parameters, grads, learning_rate)
@@ -281,22 +269,22 @@ Y_3_8_test = get_filtered_Y(Y_test, '3,8')
 Y_7_9_test = get_filtered_Y(Y_test, '7,9')
 
 
-parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 1000)
-# parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.05, 1000)
+parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 3000)
+parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.009, 3000)
 
-print('parameters 3,8 : ', parameters_3_8)
+# print('parameters 3,8 : ', parameters_3_8)
 print('costs 3,8 :', costs_3_8)
 
 # print('parameters 7,9 : ', parameters_7_9)
-# print('costs 7,9 :', costs_7_9)
+print('costs 7,9 :', costs_7_9)
 
 accuracy_3_8_train = predict(X_3_8, Y_3_8, parameters_3_8)
 accuracy_3_8 = predict(X_3_8_test, Y_3_8_test, parameters_3_8)
-# accuracy_7_9 = predict(X_7_9_test, Y_7_9_test, parameters_7_9)
+accuracy_7_9 = predict(X_7_9_test, Y_7_9_test, parameters_7_9)
 
 print('accuracy for 3,8 train = ', accuracy_3_8_train)
 print('accuracy for 3,8 test = ', accuracy_3_8)
-# print('accuracy for 7,9 = ', accuracy_7_9)
+print('accuracy for 7,9 = ', accuracy_7_9)
 
 
 
