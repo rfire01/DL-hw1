@@ -14,7 +14,7 @@ def initialize_parameters(layer_dims):
     for index in range(1,len(layer_dims)):
         dim1 = layer_dims[index]
         dim2 = layer_dims[index - 1]
-        parameters["W{}".format(index)] = np.random.randn(dim1, dim2)
+        parameters["W{}".format(index)] = np.random.randn(dim1, dim2) * 0.02
         parameters["b{}".format(index)] = np.zeros((dim1, 1))
 
     return parameters
@@ -26,7 +26,7 @@ def linear_forward(A, W, b):
 
 
 def sigmoid(z):
-    print('z = ', z)
+    # print('z = ', z)
     return 1 / (1 + np.exp(-z)), z
 
 
@@ -37,7 +37,7 @@ def relu(z):
 def linear_activation_forward(A_prev, W, B, activation):
     Z, linear_cache = linear_forward(A_prev, W, B)
     A_current, activation_cache = ACTIVATION_FORWARD[activation](Z)
-    print('A = ', A_current)
+    # print('A = ', A_current)
     return A_current, linear_cache, activation_cache
 
 
@@ -67,7 +67,7 @@ def L_model_forward(X, parameters):
     AL, linear_cache, activation_cache = linear_activation_forward(A, W, b, "sigmoid")
     AL = normalize_sigmoid_res(AL)
     caches.append((linear_cache, activation_cache))
-    print('AL', AL)
+    # print('AL', AL)
 
     return AL, caches
 
@@ -116,7 +116,6 @@ def L_model_backward(AL, Y, caches):
     grads = {}
 
     # This line is problematic when AL ~ 0 or 1 (taken from the assignment)
-    # print ('Y shape: ', Y.shape, ' AL shape: ', AL.shape)
     dAL = - (np.divide(Y, AL) - np.divide(1 - Y, 1 - AL))
     grads["dA{}".format(layers_amount)] = dAL
     dA, dW, db = linear_activation_backward(dAL, caches[-1], "sigmoid")
@@ -173,7 +172,7 @@ def get_digit_indices(Y, digits):
     indices_second = np.array(range(len(second_digit)))
     indices_second = indices_second[second_digit]
     indices = np.append(indices_first, indices_second)
-
+    indices = np.sort(indices)
     return indices
 
 
@@ -240,6 +239,14 @@ def predict(X, Y, parameters):
     accuracy = get_accuracy(predictions, Y)
     return accuracy
 
+
+
+# test_y = np.matrix([[1,1,1,1,1,1,3,3,3,3,3,8,8,8,8,8,2,2,2,2,2,3,8,3,8,3,8,5,5,5,5,5,5]])
+# test_y = get_filtered_Y(test_y, '3,8')
+
+
+
+
 # -------------------- training data --------------------
 
 X = idx2np.convert_from_file('train-images.idx3-ubyte')
@@ -256,15 +263,15 @@ Y_7_9 = get_filtered_Y(Y, '7,9')
 X_test = idx2np.convert_from_file('t10k-images.idx3-ubyte')
 Y_test = idx2np.convert_from_file('t10k-labels.idx1-ubyte')
 
-X_3_8_test = get_filtered_X(X_test, Y_test, '3,8')
-X_7_9_test = get_filtered_X(X_test, Y_test, '7,9')
+X_3_8_test = get_filtered_X(X_test, Y_test, '3,8') / 255
+X_7_9_test = get_filtered_X(X_test, Y_test, '7,9') / 255
 
 Y_3_8_test = get_filtered_Y(Y_test, '3,8')
 Y_7_9_test = get_filtered_Y(Y_test, '7,9')
 
 
-parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 10)
-parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.009, 10)
+parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.02, 1000)
+parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.05, 1000)
 
 print('parameters 3,8 : ', parameters_3_8)
 print('costs 3,8 :', costs_3_8)
