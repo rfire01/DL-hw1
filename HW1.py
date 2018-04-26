@@ -187,7 +187,7 @@ def get_filtered_X(X, Y, digits):
 
     X_refactored = np.asanyarray(X_refactored)
     X_refactored = X_refactored.transpose()
-    return X_refactored
+    return X_refactored / 255
 
 
 def transform_digits(indices, digits):
@@ -255,14 +255,14 @@ Y_7_9 = get_filtered_Y(Y, '7,9')
 X_test = idx2np.convert_from_file('t10k-images.idx3-ubyte')
 Y_test = idx2np.convert_from_file('t10k-labels.idx1-ubyte')
 
-X_3_8_test = get_filtered_X(X_test, Y_test, '3,8') / 255
-X_7_9_test = get_filtered_X(X_test, Y_test, '7,9') / 255
+X_3_8_test = get_filtered_X(X_test, Y_test, '3,8')
+X_7_9_test = get_filtered_X(X_test, Y_test, '7,9')
 
 Y_3_8_test = get_filtered_Y(Y_test, '3,8')
 Y_7_9_test = get_filtered_Y(Y_test, '7,9')
 
 
-parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.02, 100)
+parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.02, 3000)
 # parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.05, 1000)
 
 print('parameters 3,8 : ', parameters_3_8)
