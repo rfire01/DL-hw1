@@ -230,7 +230,7 @@ def get_accuracy(predictions, Y):
     for i in range(0, len(predictions)):
         if(predictions[i] == Y[i]):
             num_of_correct += 1
-    return num_of_correct / len(predictions)
+    return float(num_of_correct) / len(predictions)
 
 
 def predict(X, Y, parameters):
@@ -238,14 +238,6 @@ def predict(X, Y, parameters):
     predictions = get_predictions(AL)
     accuracy = get_accuracy(predictions, Y)
     return accuracy
-
-
-
-# test_y = np.matrix([[1,1,1,1,1,1,3,3,3,3,3,8,8,8,8,8,2,2,2,2,2,3,8,3,8,3,8,5,5,5,5,5,5]])
-# test_y = get_filtered_Y(test_y, '3,8')
-
-
-
 
 # -------------------- training data --------------------
 
