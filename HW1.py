@@ -10,14 +10,21 @@ ACTIVATION_BACKWARD = {"sigmoid": lambda dA, ac: sigmoid_backward(dA, ac),
 EPSILON = 0.000001
 
 def initialize_parameters(layer_dims):
+    np.random.seed(1)
     parameters = {}
-    for index in range(1,len(layer_dims)):
-        dim1 = layer_dims[index]
-        dim2 = layer_dims[index - 1]
-        parameters["W{}".format(index)] = np.random.randn(dim1, dim2) * 0.02
-        parameters["b{}".format(index)] = np.zeros((dim1, 1))
+    for i, layer in enumerate(layer_dims[1:]):
+        parameters['W' + str(i + 1)] = np.random.rand(layer_dims[i + 1], layer_dims[i]) * 0.01
+        parameters['b' + str(i + 1)] = np.zeros(shape=(layer_dims[i + 1], 1))
 
     return parameters
+    # parameters = {}
+    # for index in range(1,len(layer_dims)):
+    #     dim1 = layer_dims[index]
+    #     dim2 = layer_dims[index - 1]
+    #     parameters["W{}".format(index)] = np.random.randn(dim1, dim2) * 0.01
+    #     parameters["b{}".format(index)] = np.zeros((dim1, 1))
+
+    # return parameters
 
 
 def linear_forward(A, W, b):
@@ -27,7 +34,7 @@ def linear_forward(A, W, b):
 
 def sigmoid(z):
     # print('z = ', z)
-    return 1.0 / (1 + np.exp(1.0 * z)), z
+    return 1.0 / (1 + np.exp(-1.0 * z)), z
 
 
 def relu(z):
@@ -93,7 +100,10 @@ def linear_backward(dZ, cache):
 
 
 def relu_backward (dA, activation_cache):
-    return np.multiply(dA, (activation_cache > 0))
+    z = activation_cache
+    z[z <= 0] = 0
+    z[z > 0] = 1
+    return np.multiply(dA, z)
 
 
 def sigmoid_der(z, derivative=True):
@@ -102,7 +112,9 @@ def sigmoid_der(z, derivative=True):
 
 
 def sigmoid_backward(dA, activation_cache):
-    return np.multiply(dA, sigmoid_der(activation_cache))
+    a, _ = sigmoid(activation_cache)
+    gz = np.multiply(a, (1 - a))
+    return np.multiply(dA, gz)
 
 
 def linear_activation_backward(dA, cache, activation):
@@ -149,9 +161,13 @@ def L_layer_model(X, Y, layers_dims, learning_rate, num_iterations):
     for iteration in range(1, num_iterations + 1):
         print('iteration ', iteration)
         AL, caches = L_model_forward(X, parameters)
+
+        AL[AL == 0] = EPSILON
+        AL[AL == 1] -= EPSILON
+
         cost = compute_cost(AL, Y)
         if (iteration % 100) == 0:
-            costs.append(cost[0][0])
+            costs.append(cost)
 
         grads = L_model_backward(AL, Y, caches)
         parameters = Update_parameters(parameters, grads, learning_rate)
@@ -187,7 +203,7 @@ def get_filtered_X(X, Y, digits):
 
     X_refactored = np.asanyarray(X_refactored)
     X_refactored = X_refactored.transpose()
-    return X_refactored / 255
+    return X_refactored
 
 
 def transform_digits(indices, digits):
@@ -235,9 +251,12 @@ def get_accuracy(predictions, Y):
 
 def predict(X, Y, parameters):
     AL, caches = L_model_forward(X, parameters)
+    print('last AL: ')
+    print(AL)
     predictions = get_predictions(AL)
     accuracy = get_accuracy(predictions, Y)
     return accuracy
+
 
 # -------------------- training data --------------------
 
@@ -262,7 +281,7 @@ Y_3_8_test = get_filtered_Y(Y_test, '3,8')
 Y_7_9_test = get_filtered_Y(Y_test, '7,9')
 
 
-parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.02, 3000)
+parameters_3_8,costs_3_8 = L_layer_model(X_3_8, Y_3_8, [784, 20, 7, 5, 1], 0.009, 1000)
 # parameters_7_9,costs_7_9 = L_layer_model(X_7_9, Y_7_9, [784, 20, 7, 5, 1], 0.05, 1000)
 
 print('parameters 3,8 : ', parameters_3_8)
@@ -271,11 +290,12 @@ print('costs 3,8 :', costs_3_8)
 # print('parameters 7,9 : ', parameters_7_9)
 # print('costs 7,9 :', costs_7_9)
 
-
+accuracy_3_8_train = predict(X_3_8, Y_3_8, parameters_3_8)
 accuracy_3_8 = predict(X_3_8_test, Y_3_8_test, parameters_3_8)
 # accuracy_7_9 = predict(X_7_9_test, Y_7_9_test, parameters_7_9)
 
-print('accuracy for 3,8 = ', accuracy_3_8)
+print('accuracy for 3,8 train = ', accuracy_3_8_train)
+print('accuracy for 3,8 test = ', accuracy_3_8)
 # print('accuracy for 7,9 = ', accuracy_7_9)
 
 
